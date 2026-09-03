@@ -218,8 +218,8 @@ int main() {
 		glm::mat4 model=glm::mat4(1);
 		glm::mat4 view=glm::mat4(1);
 	
-	   view = glm::translate(view, glm::vec3(0.0f,0.0f,-12.0f));
-		model = glm::rotate( model, 0.5f, glm::vec3( 0.0f, 1.0f, 0.0f ) ); // use to compare orthographic and perspective projection
+	   view = glm::translate(view, glm::vec3(0.0f,-20.0f,-60.0f));
+		model = glm::rotate( model, 90.0f, glm::vec3( 0.0f, 1.0f, 0.0f ) ); // use to compare orthographic and perspective projection
 		model = glm::scale(model, glm::vec3(2.0f, 3.0f, 1.0f));
 		//view = glm::translate( view, glm::vec3( screenWidth / 2, screenHeight / 1,-600.0f ) ); // use with orthographic projection
 		
@@ -233,21 +233,53 @@ int main() {
 		
 
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1);
-		model = glm::translate(model, glm::vec3(5.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f)); // use to compare orthographic and perspective projection
-		model = glm::scale(model, glm::vec3(8.0f, 1.0f, 5.0f));
+
+		// Cubo G (Base) - Altura: 8.0 -> Centro Y = 4.0
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(8.0f, 8.0f, 7.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		//cubo extra 
-		glBindVertexArray(VAO);
+
+		// Cubo U - Altura: 7.0 -> Base en Y=8.0, Centro Y = 8.0 + 3.5 = 11.5
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 11.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(7.0f, 7.0f, 6.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1);
-		model = glm::translate(model, glm::vec3(-5.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 120.0f, glm::vec3(0.0f, 1.0f, 1.0f)); // use to compare orthographic and perspective projection
-		model = glm::scale(model, glm::vec3(4.0f, 2.0f, 1.0f));
+
+		// Cubo S - Altura: 6.0 -> Base en Y=15.0, Centro Y = 15.0 + 3.0 = 18.0
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 18.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(6.0f, 6.0f, 5.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Cubo T - Altura: 5.0 -> Base en Y=21.0, Centro Y = 21.0 + 2.5 = 23.5
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 23.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 4.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Cubo A - Altura: 4.0 -> Base en Y=26.0, Centro Y = 26.0 + 2.0 = 28.0
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 28.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 3.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Cubo V - Altura: 3.0 -> Base en Y=30.0, Centro Y = 30.0 + 1.5 = 31.5
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 31.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 2.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Cubo O - Altura: 2.0 -> Base en Y=33.0, Centro Y = 33.0 + 1.0 = 34.0
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 34.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
