@@ -1,3 +1,8 @@
+//Practica 3
+//Maldonado Jr. Montoya Gustavo
+//Fecha de entrega 04 de sptiembre 2026
+//Numero de cuenta 320492806
+
 #include<iostream>
 
 //#define GLEW_STATIC
@@ -29,7 +34,7 @@ int main() {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Proyecciones y transformaciones basicas", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Gustavo Maldonado Jr. Montoya", nullptr, nullptr);
 
 	int screenWidth, screenHeight;
 
@@ -245,7 +250,7 @@ int main() {
 		// Cubo U - Altura: 7.0 -> Base en Y=8.0, Centro Y = 8.0 + 3.5 = 11.5
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 11.5f, 0.0f));
-		model = glm::scale(model, glm::vec3(7.0f, 7.0f, 6.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 7.0f, 10.0f));
 		model = glm::rotate(model, -30.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -277,16 +282,16 @@ int main() {
 		// Cubo V - Altura: 3.0 -> Base en Y=30.0, Centro Y = 30.0 + 1.5 = 31.5
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 31.5f, 0.0f));
-		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 2.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 3.0f, 5.0f));
 		model = glm::rotate(model, -70.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Cubo O - Altura: 2.0 -> Base en Y=33.0, Centro Y = 33.0 + 1.0 = 34.0
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 34.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 35.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 1.0f));
-		model = glm::rotate(model, -80.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -80.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
