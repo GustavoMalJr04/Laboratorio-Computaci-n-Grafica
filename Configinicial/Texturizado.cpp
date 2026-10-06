@@ -1,6 +1,6 @@
 //Maldonado Jr. Montoya Gustavo
 //320492806
-//28 de septiembre de 2026
+//01 de octubre de 2026
 
 #include <iostream>
 #include <cmath>
