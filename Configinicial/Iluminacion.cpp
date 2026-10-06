@@ -21,6 +21,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
+#include <cmath>
 
 // Other Libs
 #include "SOIL2/SOIL2.h"
@@ -34,6 +36,60 @@ int SCREEN_WIDTH, SCREEN_HEIGHT;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void MouseCallback(GLFWwindow* window, double xPos, double yPos);
 void DoMovement();
+
+//Function sphere
+void generarEsfera(unsigned int segmentosX, unsigned int segmentosY,
+    std::vector<float>& vertices, std::vector<unsigned int>& indices) {
+
+    const float PI = 3.14159265359f;
+    float radio = 1.0f; // Puedes cambiar el tamaño aquí
+
+    // 1. Generar posiciones y normales
+    for (unsigned int y = 0; y <= segmentosY; ++y) {
+        for (unsigned int x = 0; x <= segmentosX; ++x) {
+
+            float xSegmento = (float)x / (float)segmentosX;
+            float ySegmento = (float)y / (float)segmentosY;
+
+            // Ángulos esféricos
+            float xPos = radio * std::cos(xSegmento * 2.0f * PI) * std::sin(ySegmento * PI);
+            float yPos = radio * std::cos(ySegmento * PI);
+            float zPos = radio * std::sin(xSegmento * 2.0f * PI) * std::sin(ySegmento * PI);
+
+            // En una esfera perfecta centrada en (0,0,0), 
+            // el vector normal es igual a la posición normalizada (radio = 1)
+            float nx = xPos / radio;
+            float ny = yPos / radio;
+            float nz = zPos / radio;
+
+            // Añadir al arreglo de vértices (Posición X,Y,Z + Normal X,Y,Z)
+            vertices.push_back(xPos);
+            vertices.push_back(yPos);
+            vertices.push_back(zPos);
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+        }
+    }
+
+    // 2. Generar índices para los triángulos (EBO)
+    for (unsigned int y = 0; y < segmentosY; ++y) {
+        for (unsigned int x = 0; x < segmentosX; ++x) {
+            unsigned int uno = y * (segmentosX + 1) + x;
+            unsigned int dos = uno + segmentosX + 1;
+
+            // Primer triángulo del cuadrado
+            indices.push_back(uno);
+            indices.push_back(dos);
+            indices.push_back(uno + 1);
+
+            // Segundo triángulo del cuadrado
+            indices.push_back(dos);
+            indices.push_back(dos + 1);
+            indices.push_back(uno + 1);
+        }
+    }
+}
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -149,6 +205,87 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
+    // ==========================================
+     // 1. CONFIGURACIÓN DE LA ESFERA (VAO, VBO, EBO)
+     // ==========================================
+    std::vector<float> verticesEsfera;
+    std::vector<unsigned int> indicesEsfera;
+
+    // Generamos la esfera (64x64 segmentos)
+    generarEsfera(64, 64, verticesEsfera, indicesEsfera);
+
+    GLuint esferaVAO, esferaVBO, esferaEBO;
+    glGenVertexArrays(1, &esferaVAO);
+    glGenBuffers(1, &esferaVBO);
+    glGenBuffers(1, &esferaEBO);
+
+    glBindVertexArray(esferaVAO);
+
+    // Cargar vértices de la esfera
+    glBindBuffer(GL_ARRAY_BUFFER, esferaVBO);
+    glBufferData(GL_ARRAY_BUFFER, verticesEsfera.size() * sizeof(float), &verticesEsfera[0], GL_STATIC_DRAW);
+
+    // Cargar índices de la esfera
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, esferaEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesEsfera.size() * sizeof(unsigned int), &indicesEsfera[0], GL_STATIC_DRAW);
+
+    // Atributo de Posición para la esfera (Location = 0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Atributo de Normales para la esfera (Location = 1)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0); // Desvincular
+
+
+    // ==========================================
+    // 2. CONFIGURACIÓN DEL CUBO / CONTENEDOR (VAO, VBO)
+    // ==========================================
+    GLuint contenedorVAO, contenedorVBO;
+    glGenVertexArrays(1, &contenedorVAO);
+    glGenBuffers(1, &contenedorVBO);
+
+    glBindVertexArray(contenedorVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, contenedorVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Atributo de Posición para el cubo (Location = 0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Atributo de Normales para el cubo (Location = 1)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0); // Desvincular
+
+    // Configuración de VAO, VBO y EBO
+    unsigned int VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    // Cargar vértices
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, verticesEsfera.size() * sizeof(float), &verticesEsfera[0], GL_STATIC_DRAW);
+
+    // Cargar índices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesEsfera.size() * sizeof(unsigned int), &indicesEsfera[0], GL_STATIC_DRAW);
+
+    // Atributo de Posición (Location = 0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Atributo de Normales (Location = 1)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
     // First, set the container's VAO (and VBO)
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -239,6 +376,9 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         calavera.Draw(lightingShader);
 
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, indicesEsfera.size(), GL_UNSIGNED_INT, 0);
+
         // --- RENDERIZADO DE LAS LÁMPARAS ---
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -261,6 +401,8 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36); // Dibuja la segunda lámpara
 
         glBindVertexArray(0);
+
+
 
         // Swap the buffers
         glfwSwapBuffers(window);
