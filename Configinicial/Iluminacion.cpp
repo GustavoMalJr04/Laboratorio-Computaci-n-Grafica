@@ -1,6 +1,6 @@
 // 320492806
 // Gustavo Maldonado Jr. Montoya
-// 05 de octubre de 2026
+// 10 de octubre de 2026
 
 // Std. Includes
 #include <string>
@@ -21,8 +21,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <vector>
-#include <cmath>
 
 // Other Libs
 #include "SOIL2/SOIL2.h"
@@ -36,60 +34,6 @@ int SCREEN_WIDTH, SCREEN_HEIGHT;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void MouseCallback(GLFWwindow* window, double xPos, double yPos);
 void DoMovement();
-
-//Function sphere
-void generarEsfera(unsigned int segmentosX, unsigned int segmentosY,
-    std::vector<float>& vertices, std::vector<unsigned int>& indices) {
-
-    const float PI = 3.14159265359f;
-    float radio = 1.0f; // Puedes cambiar el tamaño aquí
-
-    // 1. Generar posiciones y normales
-    for (unsigned int y = 0; y <= segmentosY; ++y) {
-        for (unsigned int x = 0; x <= segmentosX; ++x) {
-
-            float xSegmento = (float)x / (float)segmentosX;
-            float ySegmento = (float)y / (float)segmentosY;
-
-            // Ángulos esféricos
-            float xPos = radio * std::cos(xSegmento * 2.0f * PI) * std::sin(ySegmento * PI);
-            float yPos = radio * std::cos(ySegmento * PI);
-            float zPos = radio * std::sin(xSegmento * 2.0f * PI) * std::sin(ySegmento * PI);
-
-            // En una esfera perfecta centrada en (0,0,0), 
-            // el vector normal es igual a la posición normalizada (radio = 1)
-            float nx = xPos / radio;
-            float ny = yPos / radio;
-            float nz = zPos / radio;
-
-            // Añadir al arreglo de vértices (Posición X,Y,Z + Normal X,Y,Z)
-            vertices.push_back(xPos);
-            vertices.push_back(yPos);
-            vertices.push_back(zPos);
-            vertices.push_back(nx);
-            vertices.push_back(ny);
-            vertices.push_back(nz);
-        }
-    }
-
-    // 2. Generar índices para los triángulos (EBO)
-    for (unsigned int y = 0; y < segmentosY; ++y) {
-        for (unsigned int x = 0; x < segmentosX; ++x) {
-            unsigned int uno = y * (segmentosX + 1) + x;
-            unsigned int dos = uno + segmentosX + 1;
-
-            // Primer triángulo del cuadrado
-            indices.push_back(uno);
-            indices.push_back(dos);
-            indices.push_back(uno + 1);
-
-            // Segundo triángulo del cuadrado
-            indices.push_back(dos);
-            indices.push_back(dos + 1);
-            indices.push_back(uno + 1);
-        }
-    }
-}
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -158,7 +102,7 @@ int main()
 
     // Load models
     Model red_dog((char*)"Models/redDog/RedDog.obj");
-    Model calavera((char*)"Models/calavera/12140_Skull_v3_L2.obj");
+    Model luna((char*)"Models/luna3D/Moon_2K.obj");
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
     float vertices[] = {
@@ -205,87 +149,6 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
-    // ==========================================
-     // 1. CONFIGURACIÓN DE LA ESFERA (VAO, VBO, EBO)
-     // ==========================================
-    std::vector<float> verticesEsfera;
-    std::vector<unsigned int> indicesEsfera;
-
-    // Generamos la esfera (64x64 segmentos)
-    generarEsfera(64, 64, verticesEsfera, indicesEsfera);
-
-    GLuint esferaVAO, esferaVBO, esferaEBO;
-    glGenVertexArrays(1, &esferaVAO);
-    glGenBuffers(1, &esferaVBO);
-    glGenBuffers(1, &esferaEBO);
-
-    glBindVertexArray(esferaVAO);
-
-    // Cargar vértices de la esfera
-    glBindBuffer(GL_ARRAY_BUFFER, esferaVBO);
-    glBufferData(GL_ARRAY_BUFFER, verticesEsfera.size() * sizeof(float), &verticesEsfera[0], GL_STATIC_DRAW);
-
-    // Cargar índices de la esfera
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, esferaEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesEsfera.size() * sizeof(unsigned int), &indicesEsfera[0], GL_STATIC_DRAW);
-
-    // Atributo de Posición para la esfera (Location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Atributo de Normales para la esfera (Location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0); // Desvincular
-
-
-    // ==========================================
-    // 2. CONFIGURACIÓN DEL CUBO / CONTENEDOR (VAO, VBO)
-    // ==========================================
-    GLuint contenedorVAO, contenedorVBO;
-    glGenVertexArrays(1, &contenedorVAO);
-    glGenBuffers(1, &contenedorVBO);
-
-    glBindVertexArray(contenedorVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, contenedorVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Atributo de Posición para el cubo (Location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Atributo de Normales para el cubo (Location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0); // Desvincular
-
-    // Configuración de VAO, VBO y EBO
-    unsigned int VAO, VBO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    // Cargar vértices
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, verticesEsfera.size() * sizeof(float), &verticesEsfera[0], GL_STATIC_DRAW);
-
-    // Cargar índices
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesEsfera.size() * sizeof(unsigned int), &indicesEsfera[0], GL_STATIC_DRAW);
-
-    // Atributo de Posición (Location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Atributo de Normales (Location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     // First, set the container's VAO (and VBO)
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -325,6 +188,8 @@ int main()
     }
     stbi_image_free(image);
 
+
+
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -341,68 +206,79 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        lightingShader.Use();
-        GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
-        GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
-        glUniform3f(lightPosLoc, lightPos.x + movelightPos, lightPos.y + movelightPos, lightPos.z + movelightPos);
-        glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
-
-        // Set lights properties
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.3f, 0.3f, 0.3f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.2f, 0.7f, 0.8f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 0.3f, 0.6f, 0.4f);
-
         glm::mat4 view = camera.GetViewMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-        // Set material properties
+        // --- CÁLCULO DE ÓRBITAS (SOL Y LUNA OPUESTOS) ---
+        float radioOrbita = 7.0f; 
+        float velocidadOrbita = 1.5f; 
+        float tiempo = glfwGetTime() * velocidadOrbita;
+
+        // Posiciones contrarias (Sol y Luna)
+        float solX = cos(tiempo) * radioOrbita;
+        float solY = sin(tiempo) * radioOrbita;
+
+        float lunaX = cos(tiempo + 3.14159265f) * radioOrbita;
+        float lunaY = sin(tiempo + 3.14159265f) * radioOrbita;
+
+
+        // ==========================================
+        // RENDERIZAR CON LUZ CÁLIDA (Del lado del Sol)
+        // ==========================================
+        lightingShader.Use();
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "projection"), 1, GL_FALSE, value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "view"), 1, GL_FALSE, value_ptr(view));
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "viewPos"), camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+
+        // Propiedades de la Luz Cálida del Sol
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.position"), solX, solY, 0.5f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.2f, 0.2f, 0.2f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 1.0f, 0.8f, 0.4f);  // Cálida (Amarilla/Naranja)
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.0f, 0.9f, 0.6f);
+
+        // Material properties
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.ambient"), 0.5f, 0.5f, 0.5f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0.7f, 0.2f, 0.4f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0.8f, 0.5f, 0.2f);
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 0.6f, 0.6f, 0.6f);
-        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 1.0f);
+        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 32.0f);
 
-        // Draw the loaded model: Red Dog
+        // 1. Dibujar Red Dog (iluminado por el Sol)
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, value_ptr(model));
         red_dog.Draw(lightingShader);
 
-        // Draw the loaded model: Calavera
+
+        // ==========================================
+        // RENDERIZAR CON LUZ FRÍA (Del lado de la Luna)
+        // ==========================================
+        // Si quieres que la Luna aporte su propia luz fría al redibujar o para el siguiente objeto:
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.position"), lunaX, lunaY, 0.5f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.4f, 0.7f, 1.0f);  // Fría (Azulada)
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 0.5f, 0.8f, 1.0f);
+
+        // 2. Dibujar la Luna
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, -0.5f, 0.0f));
-        model = glm::rotate(model, glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        calavera.Draw(lightingShader);
+        model = glm::translate(model, glm::vec3(lunaX, lunaY, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); 
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, value_ptr(model));
+        luna.Draw(lightingShader);
 
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indicesEsfera.size(), GL_UNSIGNED_INT, 0);
 
-        // --- RENDERIZADO DE LAS LÁMPARAS ---
+        // ==========================================
+        // RENDERIZAR EL SOL (Lámpara visual)
+        // ==========================================
         lampshader.Use();
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, value_ptr(view));
 
         glBindVertexArray(VAO);
-
-        // Primera Luz
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos + movelightPos);
-        model = glm::scale(model, glm::vec3(0.3f));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        model = glm::translate(model, glm::vec3(solX, solY, 0.5f)); // Posición real del Sol
+        model = glm::scale(model, glm::vec3(3.0f));                 // Tamaño de la lámpara del sol
+        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // Segunda Luz
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos2 + movelightPos);
-        model = glm::scale(model, glm::vec3(0.3f));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, 36); // Dibuja la segunda lámpara
-
         glBindVertexArray(0);
-
-
 
         // Swap the buffers
         glfwSwapBuffers(window);
