@@ -1,7 +1,6 @@
 #version 330 core
 
-#define NUMBER_OF_POINT_LIGHTS 4
-#define NUMBER_OF_SPOT_LIGHTS 6
+#define NUMBER_OF_POINT_LIGHTS 1
 
 struct Material
 {
@@ -57,7 +56,7 @@ out vec4 color;
 uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NUMBER_OF_POINT_LIGHTS];
-uniform SpotLight spotLights[NUMBER_OF_SPOT_LIGHTS];
+uniform SpotLight spotLight;
 uniform Material material;
 uniform int transparency;
 
@@ -82,10 +81,7 @@ void main( )
     }
     
     // Spot light
-    for ( int i = 0; i < NUMBER_OF_SPOT_LIGHTS; i++ )
-    {
-        result += CalcSpotLight( spotLights[i], norm, FragPos, viewDir );
-    }
+    result += CalcSpotLight( spotLight, norm, FragPos, viewDir );
  	
     color = vec4( result,texture(material.diffuse, TexCoords).rgb );
 	  if(color.a < 0.1 && transparency==1)
