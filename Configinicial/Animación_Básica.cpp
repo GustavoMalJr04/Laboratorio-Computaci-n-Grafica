@@ -1,6 +1,6 @@
 //320492806
 //Maldonado Jr. Montoya Gustavo
-//19 de octubre de 2026
+//22 de octubre de 2026
 
 #include <iostream>
 #include <cmath>
@@ -101,12 +101,13 @@ float vertices[] = {
 
 glm::vec3 Light1 = glm::vec3(0);
 
-//Anim
-float posBaseBallY = 0.0f;
-float amplitudY = 1.5f;
-float velocidad = 2.0f;
+// Variables de Animación unificadas
+float anguloOrbita = 0.0f;
+float anguloOrbitaPerro = 0.0f;
 float posY = 0.0f;
+float rotacionGolpePerro = 0.0f;
 bool AnimBall = false;
+float tiempoAnimacionInicio = 0.0f;
 
 // Deltatime
 GLfloat deltaTime = 0.0f;
@@ -143,7 +144,6 @@ int main()
 	Shader lightingShader("Shader/lighting.vs", "Shader/lighting.frag");
 	Shader lampShader("Shader/lamp.vs", "Shader/lamp.frag");
 
-	//models
 	Model Dog((char*)"Models/RedDog.obj");
 	Model Piso((char*)"Models/piso.obj");
 	Model Ball((char*)"Models/ball.obj");
@@ -241,18 +241,23 @@ int main()
 		Piso.Draw(lightingShader);
 
 		// Carga de modelo Perro
-		model = glm::mat4(1);
+		model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(anguloOrbitaPerro), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.5f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotacionGolpePerro), glm::vec3(1.0f, 0.0f, 0.0f));
+
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
 		Dog.Draw(lightingShader);
 
 		// Carga de modelo Pelota
-		model = glm::mat4(1);
-		model = glm::translate(model, glm::vec3(0.0f, posY, 0.0f)); // 1. Aplicar la traslación con posY
+		model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(anguloOrbita), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.5f, posY, 0.0f));
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model)); // 2. Enviar la matriz transformada al shader
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
 		Ball.Draw(lightingShader);
 		glDisable(GL_BLEND);
@@ -366,17 +371,43 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	if (keys[GLFW_KEY_N])
 	{
 		AnimBall = !AnimBall;
+		if (AnimBall) {
+			tiempoAnimacionInicio = glfwGetTime();
+		}
 	}
 }
 
 void Animation() {
 	if (AnimBall)
 	{
-		posY = posBaseBallY + std::abs(std::sin(glfwGetTime() * velocidad)) * amplitudY;
+		// Tiempo transcurrido exacto desde que se presionó 'N'
+		float t = glfwGetTime() - tiempoAnimacionInicio;
+
+		// 1. Órbitas unificadas por tiempo
+		anguloOrbita = t * 135.0f;
+		anguloOrbitaPerro = -t * 135.0f;
+
+		// 2. NUEVO: Vinculamos el movimiento vertical directamente al ángulo de la órbita.
+		// Al multiplicar el ángulo en radianes por 2.0f, hacemos que la pelota baje y suba 
+		// EXACTAMENTE dos veces en cada vuelta completa de órbita ($360^\circ$).
+		float anguloRadianes = glm::radians(anguloOrbita);
+		posY = std::abs(std::sin(anguloRadianes * 1.0f)) * 2.0f;
+
+		// 3. Sincronización del cabezazo del perro de forma geométrica exacta con el doble rebote:
+		// Detectamos cuándo la pelota está tocando el suelo basándonos en el mismo ciclo del ángulo.
+		float cicloRebote = std::fmod(anguloRadianes, 3.1416f);
+
+		if (cicloRebote < 0.35f) { // Momento exacto en que la pelota baja a tocar la base
+			rotacionGolpePerro = 30.0f; // El perro da el cabezazo
+		}
+		else {
+			rotacionGolpePerro = 0.0f;  // Posición normal
+		}
 	}
 	else
 	{
-		posY = posBaseBallY; // Mantiene la pelota en la base cuando la animación se apaga
+		posY = 0.0f;
+		rotacionGolpePerro = 0.0f;
 	}
 }
 
