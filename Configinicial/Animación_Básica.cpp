@@ -380,21 +380,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void Animation() {
 	if (AnimBall)
 	{
-		// Tiempo transcurrido exacto desde que se presionó 'N'
 		float t = glfwGetTime() - tiempoAnimacionInicio;
 
-		// 1. Órbitas unificadas por tiempo
 		anguloOrbita = t * 135.0f;
 		anguloOrbitaPerro = -t * 135.0f;
 
-		// 2. NUEVO: Vinculamos el movimiento vertical directamente al ángulo de la órbita.
-		// Al multiplicar el ángulo en radianes por 2.0f, hacemos que la pelota baje y suba 
-		// EXACTAMENTE dos veces en cada vuelta completa de órbita ($360^\circ$).
 		float anguloRadianes = glm::radians(anguloOrbita);
 		posY = std::abs(std::sin(anguloRadianes * 1.0f)) * 2.0f;
 
-		// 3. Sincronización del cabezazo del perro de forma geométrica exacta con el doble rebote:
-		// Detectamos cuándo la pelota está tocando el suelo basándonos en el mismo ciclo del ángulo.
 		float cicloRebote = std::fmod(anguloRadianes, 3.1416f);
 
 		if (cicloRebote < 0.35f) { // Momento exacto en que la pelota baja a tocar la base
