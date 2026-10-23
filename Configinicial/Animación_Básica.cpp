@@ -117,7 +117,7 @@ int main()
 {
 	glfwInit();
 
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Animacion basica", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Gustavo Maldonado Jr. Montoya", nullptr, nullptr);
 
 	if (nullptr == window)
 	{
@@ -398,7 +398,7 @@ void Animation() {
 		float cicloRebote = std::fmod(anguloRadianes, 3.1416f);
 
 		if (cicloRebote < 0.35f) { // Momento exacto en que la pelota baja a tocar la base
-			rotacionGolpePerro = 30.0f; // El perro da el cabezazo
+			rotacionGolpePerro = -30.0f; // El perro da el cabezazo
 		}
 		else {
 			rotacionGolpePerro = 0.0f;  // Posición normal
