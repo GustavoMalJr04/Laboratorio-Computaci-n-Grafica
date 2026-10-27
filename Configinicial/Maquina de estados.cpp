@@ -524,26 +524,41 @@ void Animation() {
 	}
 	if (dogAnim == 1) {	//Walk Animation
 		if (!step) {	//State 1
-			RLegs += 0.003f;
-			FLegs += 0.003f;
-			head += 0.003f;
-			tail += 0.003f;
+			RLegs += 0.6f;
+			FLegs += 0.6f;
+			head += 0.6f;
+			tail += 0.6f;
 
 			if (RLegs > 15.0f)	//Condition
 				step = true;
 		}
 		else {
-			RLegs -= 0.003f;
-			FLegs -= 0.003f;
-			head -= 0.003f;
-			tail -= 0.003f;
+			RLegs -= 0.6f;
+			FLegs -= 0.6f;
+			head -= 0.6f;
+			tail -= 0.6f;
 
 			if (RLegs < -15.0f)	//Condition
 				step = false;
 		}
-		if(dogPos.z > 2.0)
+		
+		if (dogPos.x == 0 and dogPos.z <= 2.0) {
+			dogPos.z += 0.02;
+			if (dogPos.z == 2.0)
+				dogRot = -90;
+		}
+		else if(dogPos.x >= -2.0) {
+			dogPos.x -= 0.02;
+		}
+		else if (dogPos.x == -2.0 and dogPos.z > -2.0) {
+			dogPos.z -= 0.02;
+		}
+		else {
 			dogAnim = 0;
-		dogPos.z += 0.0001;
+		}
+
+
+
 	}
 	
 }
