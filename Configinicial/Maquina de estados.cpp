@@ -1,4 +1,4 @@
-//22 de octubre de 2026
+//30 de octubre de 2026
 //Maldonado Jr. Montoya Gustavo
 //320492806
 
@@ -524,37 +524,49 @@ void Animation() {
 	}
 	if (dogAnim == 1) {	//Walk Animation
 		if (!step) {	//State 1
-			RLegs += 0.6f;
-			FLegs += 0.6f;
-			head += 0.6f;
-			tail += 0.6f;
+			RLegs += 0.06f;
+			FLegs += 0.06f;
+			head += 0.06f;
+			tail += 0.06f;
 
 			if (RLegs > 15.0f)	//Condition
 				step = true;
 		}
 		else {
-			RLegs -= 0.6f;
-			FLegs -= 0.6f;
-			head -= 0.6f;
-			tail -= 0.6f;
-
+			RLegs -= 0.06f;
+			FLegs -= 0.06f;
+			head -= 0.06f;
+			tail -= 0.06f;
 			if (RLegs < -15.0f)	//Condition
 				step = false;
 		}
-		
-		if (dogPos.x == 0 and dogPos.z <= 2.0) {
-			dogPos.z += 0.02;
-			if (dogPos.z == 2.0)
-				dogRot = -90;
+
+		if (dogPos.x == 0.0 and dogPos.z <= 2.2) {
+			dogPos.z += 0.0002;
 		}
-		else if(dogPos.x >= -2.0) {
-			dogPos.x -= 0.02;
+		else if (dogPos.z >= 2.0 and dogPos.x >= -2.2) {
+			dogPos.x -= 0.0002;
+			if (dogPos.x <= 2.2)
+			dogRot = -90;
 		}
-		else if (dogPos.x == -2.0 and dogPos.z > -2.0) {
-			dogPos.z -= 0.02;
+		else if (dogPos.x <= -2.0 and dogPos.z >= -2.0) {
+			dogPos.z -= 0.0002;
+			dogRot = -180;
+		}
+		else if (dogPos.z <= -2.0 and dogPos.x <= 2.2) {
+			dogPos.x += 0.0002;
+			dogRot = -270;
+		}
+		else if (dogPos.x >= 0.0 && dogPos.z <= 0.0) {
+			dogPos.z += 0.0003f;
+			dogPos.x -= 0.0004f;
+			dogRot = -45;
 		}
 		else {
 			dogAnim = 0;
+			dogPos.x = 0.0f;
+			dogPos.z = 0.0f;
+			dogRot = 0.0;
 		}
 
 
