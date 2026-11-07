@@ -1,8 +1,9 @@
 //320492806
 //Gustavo Maldonado Jr. Montoya
-//02 noviembre de 2026
+//07 noviembre de 2026
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
 
 // GLEW
@@ -112,6 +113,7 @@ float RLegs = 0.0f;
 float head = 0.0f;
 float tail = 0.0f;
 float rotDogX = 0.0f;
+float rotDogZ = 0.0f;
 float headX = 0.0f;
 
 
@@ -141,6 +143,8 @@ typedef struct _frame {
 	float RLegsInc;
 	float rotDogX;
 	float rotDogXInc;
+	float rotDogZ;
+	float rotDogZInc;
 	float headX;
 	float headXInc;
 
@@ -182,7 +186,7 @@ void resetElements(void)
 	FLegs = KeyFrame[0].FLegs;
 	RLegs = KeyFrame[0].RLegs;
 	rotDogX = KeyFrame[0].rotDogX;
-
+	rotDogZ = KeyFrame[0].rotDogZ;
 	rotDog = KeyFrame[0].rotDog;
 
 }
@@ -198,7 +202,7 @@ void interpolation(void)
 	KeyFrame[playIndex].FLegsInc = (KeyFrame[playIndex + 1].FLegs - KeyFrame[playIndex].FLegs) / i_max_steps;
 	KeyFrame[playIndex].RLegsInc = (KeyFrame[playIndex + 1].RLegs - KeyFrame[playIndex].RLegs) / i_max_steps;
 	KeyFrame[playIndex].rotDogXInc = (KeyFrame[playIndex + 1].rotDogX - KeyFrame[playIndex].rotDogX) / i_max_steps;
-
+	KeyFrame[playIndex].rotDogZInc = (KeyFrame[playIndex + 1].rotDogZ - KeyFrame[playIndex].rotDogZ) / i_max_steps;
 	KeyFrame[playIndex].rotDogInc = (KeyFrame[playIndex + 1].rotDog - KeyFrame[playIndex].rotDog) / i_max_steps;
 
 }
@@ -208,6 +212,64 @@ void interpolation(void)
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
+
+// Guardar los keyframes en un archivo de texto
+void saveAnimationToFile(const char* filename) {
+	std::ofstream outFile(filename);
+	if (!outFile.is_open()) {
+		std::printf("Error: No se pudo abrir el archivo para guardar la animacion.\n");
+		return;
+	}
+
+	// Guardamos primero el FrameIndex para saber cuántos fotogramas leer después
+	outFile << FrameIndex << "\n";
+	for (int i = 0; i < FrameIndex; i++) {
+		outFile << KeyFrame[i].dogPosX << " "
+			<< KeyFrame[i].dogPosY << " "
+			<< KeyFrame[i].dogPosZ << " "
+			<< KeyFrame[i].rotDog << " "
+			<< KeyFrame[i].rotDogX << " "
+			<< KeyFrame[i].rotDogZ << " "
+			<< KeyFrame[i].head << " "
+			<< KeyFrame[i].headX << " "
+			<< KeyFrame[i].tail << " "
+			<< KeyFrame[i].FLegs << " "
+			<< KeyFrame[i].RLegs << "\n";
+	}
+	outFile.close();
+	std::printf("¡Animacion guardada exitosamente en %s!\n", filename);
+}
+
+// Cargar los keyframes desde un archivo de texto
+void loadAnimationFromFile(const char* filename) {
+	std::ifstream inFile(filename);
+	if (!inFile.is_open()) {
+		std::printf("Error: No se pudo abrir el archivo para cargar la animacion.\n");
+		return;
+	}
+
+	inFile >> FrameIndex;
+	if (FrameIndex > MAX_FRAMES) FrameIndex = MAX_FRAMES; // Seguridad
+
+	for (int i = 0; i < FrameIndex; i++) {
+		inFile >> KeyFrame[i].dogPosX
+			>> KeyFrame[i].dogPosY
+			>> KeyFrame[i].dogPosZ
+			>> KeyFrame[i].rotDog
+			>> KeyFrame[i].rotDogX
+			>> KeyFrame[i].rotDogZ
+			>> KeyFrame[i].head
+			>> KeyFrame[i].headX
+			>> KeyFrame[i].tail
+			>> KeyFrame[i].FLegs
+			>> KeyFrame[i].RLegs;
+	}
+	inFile.close();
+	std::printf("¡Animacion cargada exitosamente desde %s! Total frames: %d\n", filename, FrameIndex);
+
+	// Opcional: Reiniciar la posición al primer frame cargado
+	resetElements();
+}
 
 int main()
 {
@@ -282,6 +344,7 @@ int main()
 		KeyFrame[i].incY = 0;
 		KeyFrame[i].incZ = 0;
 		KeyFrame[i].rotDog = 0;
+		KeyFrame[i].rotDogZ = 0;
 		KeyFrame[i].rotDogInc = 0;
 		KeyFrame[i].head = 0;
 		KeyFrame[i].headInc = 0;
@@ -430,6 +493,7 @@ int main()
 		modelTemp= model = glm::translate(model, glm::vec3(dogPosX,dogPosY,dogPosZ));
 		modelTemp= model = glm::rotate(model, glm::radians(rotDog), glm::vec3(0.0f, 1.0f, 0.0f));
 		modelTemp = model = glm::rotate(model, glm::radians(rotDogX), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelTemp = model = glm::rotate(model, glm::radians(rotDogZ), glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		DogBody.Draw(lightingShader);
 		//Head
@@ -529,6 +593,24 @@ void DoMovement()
 {
 	//Dog Controls
 	
+	if (keys[GLFW_KEY_Z])
+	{
+
+		rotDogZ += 0.03f;
+		dogPosY += 0.0001;
+		headX -= 0.02;
+
+	}
+
+	if (keys[GLFW_KEY_X])
+	{
+
+		rotDogZ -= 0.03f;
+		dogPosY -= 0.0001;
+		headX += 0.02;
+
+	}
+
 	if (keys[GLFW_KEY_E])
 	{
 
@@ -543,7 +625,7 @@ void DoMovement()
 
 		rotDogX -= 0.03f;
 		dogPosY -= 0.0001;
-		headX += 0.02
+		headX += 0.02;
 
 	}
 
@@ -728,7 +810,17 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 
 	}
 
+	// NUEVO: Guardar animación en archivo con la tecla C
+	if (key == GLFW_KEY_C && action == GLFW_PRESS)
+	{
+		saveAnimationToFile("animacion_reddog.txt");
+	}
 
+	// NUEVO: Cargar animación desde archivo con la tecla V
+	if (key == GLFW_KEY_V && action == GLFW_PRESS)
+	{
+		loadAnimationFromFile("animacion_reddog.txt");
+	}
 
 	if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action)
 	{
